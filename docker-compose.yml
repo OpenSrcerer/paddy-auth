@@ -11,7 +11,8 @@ services:
       paddy-bridge:
         aliases:
           - paddy.auth.io
-    build: .
+#    build: .
+    image: ghcr.io/opensrcerer/paddy-auth:master
     restart: on-failure
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/auth/v1/health"]

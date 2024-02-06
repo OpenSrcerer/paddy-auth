@@ -41,4 +41,4 @@ RUN chown 1001 /work \
 EXPOSE 8080
 USER 1001
 
-CMD ["work/quarkus-build/gen/paddy-auth-1.0.0-SNAPSHOT-runner", "-Dquarkus.http.host=0.0.0.0"]
+CMD ["/work/quarkus-build/gen/paddy-auth-1.0.0-SNAPSHOT-runner", "-Dquarkus.http.host=0.0.0.0"]
