@@ -37,9 +37,8 @@ COPY --from=BUILD /appbuild/* .
 RUN chown 1001 /work \
     && chmod "g+rwX" /work \
     && chown 1001:root /work
-COPY --chown=1001:root build/*-runner /work/application
 
 EXPOSE 8080
 USER 1001
 
-CMD ["/work/quarkus-build/gen/paddy-auth-1.0.0-SNAPSHOT-runner", "-Dquarkus.http.host=0.0.0.0"]
+CMD ["work/quarkus-build/gen/paddy-auth-1.0.0-SNAPSHOT-runner", "-Dquarkus.http.host=0.0.0.0"]
