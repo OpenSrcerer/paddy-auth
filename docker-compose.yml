@@ -1,0 +1,25 @@
+version: "3.8"
+
+networks:
+  paddy-bridge:
+    driver: bridge
+
+services:
+  paddy-auth:
+    container_name: paddy-auth
+    networks:
+      paddy-bridge:
+        aliases:
+          - paddy.auth.io
+    build: .
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/auth/v1/health"]
+      interval: 5s
+      timeout: 30s
+      retries: 3
+      start_period: 10s
+    ports:
+      - "80:80"
+    env_file:
+      - ".env"

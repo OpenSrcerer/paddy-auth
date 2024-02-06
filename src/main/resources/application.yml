@@ -1,0 +1,8 @@
+quarkus:
+  devservices:
+    enabled: false
+  http:
+    port: 80
+    root-path: /auth/v1
+    access-log:
+      enabled: true
