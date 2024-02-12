@@ -20,6 +20,9 @@ dependencies {
     //    implementation("io.quarkus:quarkus-hibernate-orm-panache")
     //    implementation("io.quarkus:quarkus-reactive-pg-client")
 
+    implementation("org.neo4j:neo4j-ogm-quarkus:3.6.0")
+    implementation("io.quarkiverse.neo4j:quarkus-neo4j:3.6.0")
+
     implementation("io.quarkus:quarkus-resteasy-reactive-jackson")
     implementation("io.quarkus:quarkus-resteasy-reactive")
     implementation("io.quarkus:quarkus-config-yaml")
