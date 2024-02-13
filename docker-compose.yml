@@ -11,16 +11,22 @@ services:
       paddy-bridge:
         aliases:
           - paddy.auth.io
-#    build: .
-    image: ghcr.io/opensrcerer/paddy-auth:master
+    build: .
+#    image: ghcr.io/opensrcerer/paddy-auth:master
     restart: on-failure
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/auth/v1/health"]
-      interval: 5s
-      timeout: 30s
-      retries: 3
-      start_period: 10s
     ports:
       - "80:80"
     env_file:
       - ".env"
+
+  emqx1:
+    image: emqx:5.5.0
+    container_name: emqx1
+    restart: on-failure
+    networks:
+      paddy-bridge:
+        aliases:
+          - node1.emqx.io
+    ports:
+      - "1883:1883"
+      - "18083:18083"

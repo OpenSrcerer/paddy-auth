@@ -12,39 +12,16 @@ import java.security.interfaces.RSAPublicKey
 import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.RSAPublicKeySpec
 import java.time.Instant
-import java.util.Base64
+import java.util.*
 
 @ApplicationScoped
 class JwtService(
     private val jwksConfiguration: JwksConfiguration
 ) {
-    fun makeJwks(): String {
-        val rsaPublicKey = makeKeyPair().second as RSAPublicKey
-
-        val jwksResponse = java.lang.String.format(
-            """
-            {
-                "keys": [{
-                    "kty": "%s",
-                    "kid": "1",
-                    "n": "%s",
-                    "e": "%s",
-                    "alg": "RS256",
-                    "use": "sig"
-                }]
-            }
-            """.trimIndent()
-                .replace("\n", "")
-                .replace(" ", ""),
-            rsaPublicKey.algorithm,
-            Base64.getUrlEncoder().encodeToString(rsaPublicKey.modulus.toByteArray()),
-            Base64.getUrlEncoder().encodeToString(rsaPublicKey.publicExponent.toByteArray())
-        )
-
-        return jwksResponse
-    }
-
-    fun makeJwt(jwtLifetimeSeconds: Long = 31540000L): String {
+    fun makeJwt(
+        sub: String,
+        jwtLifetimeSeconds: Long = 31540000
+    ): String {
         val (privateKey, _) = makeKeyPair()
 
         val jwtHeader: String = Base64.getUrlEncoder().withoutPadding().encodeToString(
@@ -57,11 +34,11 @@ class JwtService(
 
         val jwtPayloadTemplate = """
             {
-                "sub": "daniel.stefani",
+                "sub": "$sub",
                 "iss": "https://danielstefani.online",
                 "iat": %s,
                 "exp": %s,
-                "aud": "MQTT Clients"
+                "aud": "Paddy MQTT Broker Clients"
             }
             
             """.trimIndent().replace(" ", "").replace("\n", "")
@@ -86,6 +63,32 @@ class JwtService(
         )
 
         return "$jwtContent.$jwtSignature"
+    }
+
+    fun makeJwks(): String {
+        val rsaPublicKey = makeKeyPair().second as RSAPublicKey
+
+        val jwksResponse = java.lang.String.format(
+            """
+            {
+                "keys": [{
+                    "kty": "%s",
+                    "kid": "1",
+                    "n": "%s",
+                    "e": "%s",
+                    "alg": "RS256",
+                    "use": "sig"
+                }]
+            }
+            """.trimIndent()
+                .replace("\n", "")
+                .replace(" ", ""),
+            rsaPublicKey.algorithm,
+            Base64.getUrlEncoder().encodeToString(rsaPublicKey.modulus.toByteArray()),
+            Base64.getUrlEncoder().encodeToString(rsaPublicKey.publicExponent.toByteArray())
+        )
+
+        return jwksResponse
     }
 
     private fun makeKeyPair(): Pair<PrivateKey, PublicKey> {
