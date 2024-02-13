@@ -12,7 +12,7 @@ import java.util.*
 
 
 @Path("/")
-class DeviceAuthenticationController(
+class AuthenticationController(
     private val jwtService: JwtService,
     private val deviceRepository: DeviceRepository
 ) {
