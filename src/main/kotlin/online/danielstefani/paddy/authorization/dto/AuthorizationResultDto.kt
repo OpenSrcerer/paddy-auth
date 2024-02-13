@@ -10,21 +10,21 @@ class AuthorizationResultDto private constructor(
     val result: DeviceAuthorizationResult
 ) {
     companion object {
-        fun allow(sub: String, topic: String): RestResponse<AuthorizationResultDto> {
+        fun allow(topic: String, sub: String): RestResponse<AuthorizationResultDto> {
             Log.info("Allowing <$sub>'s access to <$topic>.")
             return ResponseBuilder.ok(AuthorizationResultDto(DeviceAuthorizationResult.ALLOW))
                 .status(Status.OK)
                 .build()
         }
 
-        fun forbid(sub: String, topic: String): RestResponse<AuthorizationResultDto> {
+        fun forbid(topic: String, sub: String): RestResponse<AuthorizationResultDto> {
             Log.info("Forbidding <$sub>'s access to <$topic>.")
             return ResponseBuilder.ok(AuthorizationResultDto(DeviceAuthorizationResult.DENY))
                 .status(Status.OK)
                 .build()
         }
 
-        fun ignore(sub: String, topic: String): RestResponse<AuthorizationResultDto> {
+        fun ignore(topic: String, sub: String): RestResponse<AuthorizationResultDto> {
             Log.info("Sending <$sub>'s access to <$topic> to next authorizer in chain.")
             return ResponseBuilder.ok(AuthorizationResultDto(DeviceAuthorizationResult.IGNORE))
                 .status(Status.OK)

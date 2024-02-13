@@ -32,18 +32,19 @@ class AuthorizationController {
                 Log.debug("Received invalid JWT: <${authDto.username}>.")
                 null
             }
-        if (jwt == null) return forbid()
+        if (jwt == null) return forbid(authDto.topic, "<missing/invalid jwt>")
 
         val sub = jwt.getJsonObject("payload").getString("sub")
 
         // Special case: Check if the token is for the backend
         if (sub.equals("paddy-backend")) {
             Log.debug("Received Paddy Backend JWT: <${authDto.username}>.")
-            return allow()
+            return allow(authDto.topic, sub)
         }
 
         // Check if the topic matches the sub -> if no match 403
-        return if (topicMatchSub(authDto.topic, sub)) allow() else forbid()
+        return if (topicMatchSub(authDto.topic, sub))
+            allow(authDto.topic, sub) else forbid(authDto.topic, sub)
     }
 
     /*
