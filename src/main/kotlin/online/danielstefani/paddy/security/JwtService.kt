@@ -1,28 +1,24 @@
 package online.danielstefani.paddy.security
 
+import io.quarkus.logging.Log
+import io.vertx.core.json.JsonObject
+import io.vertx.ext.auth.impl.jose.JWT
 import jakarta.enterprise.context.ApplicationScoped
-import online.danielstefani.paddy.configuration.JwksConfiguration
 import java.nio.charset.StandardCharsets
-import java.security.KeyFactory
-import java.security.PrivateKey
-import java.security.PublicKey
 import java.security.Signature
-import java.security.interfaces.RSAPrivateCrtKey
 import java.security.interfaces.RSAPublicKey
-import java.security.spec.PKCS8EncodedKeySpec
-import java.security.spec.RSAPublicKeySpec
 import java.time.Instant
 import java.util.*
 
 @ApplicationScoped
 class JwtService(
-    private val jwksConfiguration: JwksConfiguration
+    private val keychainHolder: KeychainHolder
 ) {
     fun makeJwt(
         sub: String,
         jwtLifetimeSeconds: Long = 31540000
     ): String {
-        val (privateKey, _) = makeKeyPair()
+        val (privateKey, _) = keychainHolder.keypair()
 
         val jwtHeader: String = Base64.getUrlEncoder().withoutPadding().encodeToString(
             """
@@ -66,7 +62,7 @@ class JwtService(
     }
 
     fun makeJwks(): String {
-        val rsaPublicKey = makeKeyPair().second as RSAPublicKey
+        val rsaPublicKey = keychainHolder.keypair().second as RSAPublicKey
 
         val jwksResponse = java.lang.String.format(
             """
@@ -91,22 +87,24 @@ class JwtService(
         return jwksResponse
     }
 
-    private fun makeKeyPair(): Pair<PrivateKey, PublicKey> {
-        val keyFactory = KeyFactory.getInstance("RSA")
+    fun parseJwt(jwt: String): JsonObject? {
+        return try {
+                JWT.parse(jwt)
+            } catch (ex: Exception) {
+                Log.debug("Received invalid JWT: <${jwt}>.")
+                null
+            }
+    }
 
-        val privateKey = with(Base64.getDecoder().decode(jwksConfiguration.privateKey())) {
-            keyFactory.generatePrivate(PKCS8EncodedKeySpec(this))
+    /*
+    Check the signature of the JWT.
+    */
+    fun isJwtValid(jwt: String): Boolean {
+        try {
+            keychainHolder.verifier().verify(jwt)
+            return true
+        } catch (ex: Exception) {
+            return false
         }
-
-        val publicKey = with(
-            RSAPublicKeySpec(
-                (privateKey as RSAPrivateCrtKey).modulus,
-                privateKey.publicExponent
-            )
-        ) {
-            keyFactory.generatePublic(this)
-        }
-
-        return Pair(privateKey, publicKey)
     }
 }

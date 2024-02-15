@@ -16,20 +16,19 @@ val quarkusPlatformVersion: String by project
 dependencies {
     implementation(enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"))
 
-    //    implementation("io.quarkus:quarkus-hibernate-orm")
-    //    implementation("io.quarkus:quarkus-hibernate-orm-panache")
-    //    implementation("io.quarkus:quarkus-reactive-pg-client")
+    // Java-JWT
+    implementation("com.auth0:java-jwt:4.4.0")
 
-    implementation("org.neo4j:neo4j-ogm-quarkus:3.6.0")
-    implementation("io.quarkiverse.neo4j:quarkus-neo4j:3.6.0")
-
+    // Reactive REST
     implementation("io.quarkus:quarkus-resteasy-reactive-jackson")
     implementation("io.quarkus:quarkus-resteasy-reactive")
     implementation("io.quarkus:quarkus-config-yaml")
 
+    // Kotlin-Specific
     implementation("io.quarkus:quarkus-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
+    // Quarkus Support
     implementation("io.quarkus:quarkus-arc")
 
     testImplementation("io.quarkus:quarkus-junit5")
