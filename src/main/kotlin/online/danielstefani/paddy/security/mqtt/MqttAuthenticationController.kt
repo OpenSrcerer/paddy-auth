@@ -4,7 +4,7 @@ import jakarta.ws.rs.GET
 import jakarta.ws.rs.Path
 import jakarta.ws.rs.Produces
 import jakarta.ws.rs.core.MediaType
-import online.danielstefani.paddy.security.JwtService
+import online.danielstefani.paddy.jwt.JwtService
 
 
 @Path("/")
@@ -20,15 +20,5 @@ class MqttAuthenticationController(
     @Produces(MediaType.APPLICATION_JSON)
     fun getJwks(): String {
         return jwtService.makeJwks()
-    }
-
-    /*
-    Mint a new JWT. Should be called only by the backend
-    as these JWTs have permissions to connect to all topics.
-     */
-    @GET
-    @Path("/admin-jwt")
-    fun getJwt(): String {
-        return jwtService.makeJwt("paddy-backend")
     }
 }

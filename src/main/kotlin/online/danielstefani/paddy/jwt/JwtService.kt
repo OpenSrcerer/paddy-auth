@@ -1,9 +1,11 @@
-package online.danielstefani.paddy.security
+package online.danielstefani.paddy.jwt
 
 import io.quarkus.logging.Log
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.auth.impl.jose.JWT
 import jakarta.enterprise.context.ApplicationScoped
+import online.danielstefani.paddy.jwt.dto.JwtResponseDto
+import online.danielstefani.paddy.jwt.dto.JwtType
 import java.nio.charset.StandardCharsets
 import java.security.Signature
 import java.security.interfaces.RSAPublicKey
@@ -15,9 +17,9 @@ class JwtService(
     private val keychainHolder: KeychainHolder
 ) {
     fun makeJwt(
-        sub: String,
-        jwtLifetimeSeconds: Long = 31540000
-    ): String {
+        subject: String,
+        jwtType: JwtType
+    ): JwtResponseDto {
         val (privateKey, _) = keychainHolder.keypair()
 
         val jwtHeader: String = Base64.getUrlEncoder().withoutPadding().encodeToString(
@@ -30,20 +32,20 @@ class JwtService(
 
         val jwtPayloadTemplate = """
             {
-                "sub": "$sub",
+                "sub": "$subject",
                 "iss": "https://danielstefani.online",
                 "iat": %s,
                 "exp": %s,
-                "aud": "Paddy MQTT Broker Clients"
+                "aud": "${jwtType.audience}"
             }
             
             """.trimIndent().replace(" ", "").replace("\n", "")
 
+        val now = Instant.now().epochSecond
+        val expiry = Instant.now().plusSeconds(jwtType.lifetime).epochSecond
         val jwtPayload: String = Base64.getUrlEncoder().withoutPadding().encodeToString(
             String.format(
-                jwtPayloadTemplate,
-                Instant.now().epochSecond,
-                Instant.now().plusSeconds(jwtLifetimeSeconds).epochSecond
+                jwtPayloadTemplate, now, expiry
             ).replace(" ", "").replace("\n", "")
                 .toByteArray(StandardCharsets.UTF_8)
         )
@@ -58,7 +60,7 @@ class JwtService(
             signature.sign()
         )
 
-        return "$jwtContent.$jwtSignature"
+        return JwtResponseDto("$jwtContent.$jwtSignature", expiry)
     }
 
     fun makeJwks(): String {

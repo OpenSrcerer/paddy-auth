@@ -1,4 +1,4 @@
-package online.danielstefani.paddy.security
+package online.danielstefani.paddy.jwt
 
 import jakarta.enterprise.context.ApplicationScoped
 import online.danielstefani.paddy.configuration.JwksConfiguration

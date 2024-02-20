@@ -6,7 +6,7 @@ import jakarta.ws.rs.Path
 import jakarta.ws.rs.Produces
 import jakarta.ws.rs.core.MediaType
 import online.danielstefani.paddy.security.AbstractAuthorizationController
-import online.danielstefani.paddy.security.JwtService
+import online.danielstefani.paddy.jwt.JwtService
 import online.danielstefani.paddy.security.dto.AuthorizationRequestDto
 import online.danielstefani.paddy.security.dto.AuthorizationResultDto
 import org.jboss.resteasy.reactive.RestResponse
@@ -16,7 +16,8 @@ import java.time.Instant
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 class HttpAuthenticationController(
-    private val jwtService: JwtService) : AbstractAuthorizationController() {
+    private val jwtService: JwtService
+) : AbstractAuthorizationController() {
 
     @POST
     @Path("/validate")
