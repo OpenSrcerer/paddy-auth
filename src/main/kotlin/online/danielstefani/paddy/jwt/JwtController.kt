@@ -7,7 +7,7 @@ import online.danielstefani.paddy.jwt.dto.JwtResponseDto
 
 @Path("/jwt")
 @Consumes(MediaType.APPLICATION_JSON)
-@Produces(MediaType.TEXT_PLAIN)
+@Produces(MediaType.APPLICATION_JSON)
 class JwtController(
     private val jwtService: JwtService
 ) {
