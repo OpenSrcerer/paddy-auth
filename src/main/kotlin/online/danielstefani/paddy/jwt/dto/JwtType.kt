@@ -5,6 +5,6 @@ enum class JwtType(
     val audience: String
 ) {
     ADMIN(31540000, "paddy~internal"),
-    PAD(31540000, "paddy~pad"),
+    DAEMON(31540000, "paddy~daemon"),
     USER(3600, "paddy~user")
 }
