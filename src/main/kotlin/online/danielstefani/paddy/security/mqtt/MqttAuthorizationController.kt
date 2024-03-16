@@ -41,14 +41,10 @@ class MqttAuthorizationController(
     }
 
     /*
-    Topics are expected to be in some-topic-here/test/abc/SUB-XXXX.
-    This function extracts the SUB-XXXX part and checks it against the sub in the claim.
+    Topics are expected to be in the format daemon/SUB-XXXX/...
+    This function makes sure that the first part is in that format.
      */
     private fun subMatchTopic(sub: String, topic: String): Boolean {
-        val topicSerial: String? = with(topic.split("/")) {
-            if (this.isEmpty()) null
-            else this.last()
-        }
-        return topicSerial.equals(sub)
+        return topic.startsWith("daemon/$sub/")
     }
 }
