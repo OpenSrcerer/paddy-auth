@@ -1,70 +1,37 @@
-# paddy-auth
+> ⚠️ Documentation is still WIP. Expect more updates around May.
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+# Paddy Auth
 
-If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
+This is the authentication/authorization component for Paddy, the Power Administration Daemon.
 
-## Running the application in dev mode
+It uses [Quarkus, the Supersonic Subatomic Java Framework](https://quarkus.io/) running Java 17, is written in Kotlin, and is deployed in Docker.
 
-You can run your application in dev mode that enables live coding using:
-```shell script
-./gradlew quarkusDev
-```
+The job of this application is to issue & verify JWTs for all who want to access the Paddy API, be it HTTP or MQTT. It does not support HTTPS, as normally this runs inside a VPC.
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at http://localhost:8080/q/dev/.
+## Issuing
+This app exposes an API to issue JWTs on-demand. It can generate short-expiration JWTs for clients, or long-expiration ones for Daemons.
 
-## Packaging and running the application
+## Verification
 
-The application can be packaged using:
-```shell script
-./gradlew build
-```
-It produces the `quarkus-run.jar` file in the `build/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `build/quarkus-app/lib/` directory.
+### HTTP Authentication
 
-The application is now runnable using `java -jar build/quarkus-app/quarkus-run.jar`.
+1. Signature is verified.
+2. JWT Expiration is checked.
 
-If you want to build an _über-jar_, execute the following command:
-```shell script
-./gradlew build -Dquarkus.package.type=uber-jar
-```
+### HTTP Authorization
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar build/*-runner.jar`.
+No Authorization for HTTP is done on this application. That is rather done on the Paddy Backend app.
 
-## Creating a native executable
+### MQTT Authentication
 
-You can create a native executable using: 
-```shell script
-./gradlew build -Dquarkus.package.type=native
-```
+A JWKS (JSON Web Key Set) is exposed in an API, and ingested by the MQTT Broker. This key is used to verify incoming usernames, which should be set to a valid JWT for anyone who wants to connect to the broker.
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using: 
-```shell script
-./gradlew build -Dquarkus.package.type=native -Dquarkus.native.container-build=true
-```
+1. Signature is verified.
+2. JWT Expiration is checked.
 
-You can then execute your native executable with: `./build/paddy-auth-1.0.0-SNAPSHOT-runner`
+### MQTT Authorization
 
-If you want to learn more about building native executables, please consult https://quarkus.io/guides/gradle-tooling.
+MQTT Authorization is performed by checking what action the client wants to perform. The scope of what a client can do is limited to the "sub" claim. For instance, if your sub claim was `17`, you can only connect to the broker if:
 
-## Related Guides
-
-- RESTEasy Reactive ([guide](https://quarkus.io/guides/resteasy-reactive)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
-- Kotlin ([guide](https://quarkus.io/guides/kotlin)): Write your services in Kotlin
-- YAML Configuration ([guide](https://quarkus.io/guides/config-yaml)): Use YAML to configure your Quarkus application
-
-## Provided Code
-
-### YAML Config
-
-Configure your application with YAML
-
-[Related guide section...](https://quarkus.io/guides/config-reference#configuration-examples)
-
-The Quarkus application configuration is located in `src/main/resources/application.yml`.
-
-### RESTEasy Reactive
-
-Easily start your Reactive RESTful Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+1. You have a valid JWT (see above).
+2. You wish to publish/subscribe to a topic that begins with `daemon/17`. So, `daemon/17/hello` and `daemon/17/the/answer/is/42` are valid, but `daemonn/17` and `daemon/18/malicious/attack` are not. This is done to prevent eavesdropping on other daemons' messages or disrupting their flow.
