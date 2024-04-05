@@ -7,6 +7,7 @@ import jakarta.ws.rs.Produces
 import jakarta.ws.rs.core.MediaType
 import online.danielstefani.paddy.security.AbstractAuthorizationController
 import online.danielstefani.paddy.jwt.JwtService
+import online.danielstefani.paddy.jwt.dto.JwtType
 import online.danielstefani.paddy.security.dto.AuthenticationRequestDto
 import online.danielstefani.paddy.security.dto.AuthenticationResultDto
 import org.jboss.resteasy.reactive.RestResponse
@@ -29,6 +30,8 @@ class HttpAuthenticationController(
         with(jwt.getJsonObject("payload")) {
             val sub = this.getString("sub") ?: "<missing sub claim>"
             val exp = this.getLong("exp") ?: 0
+            val aud = this.getString("aud") ?: ""
+            val isRefresh = aud == JwtType.REFRESH.audience
 
             // Check signature
             if (!jwtService.isJwtValid(authDto.jwt))
@@ -37,10 +40,8 @@ class HttpAuthenticationController(
             if (exp < Instant.now().epochSecond)
                 return forbid(authDto.jwt, sub)
 
-            return if (authDto.refresh)
-                    refresh(authDto.jwt, sub)
-                else
-                    allow(authDto.jwt, sub)
+            return if (isRefresh) refresh(authDto.jwt, sub)
+                else allow(authDto.jwt, sub)
         }
     }
 }

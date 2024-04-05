@@ -10,6 +10,5 @@ https://www.emqx.io/docs/en/latest/access-control/authz/http.html
 data class AuthenticationRequestDto(
     val jwt: String,              // Expected to be a JWT
     val topic: String? = null,    // Topic that client wants to access
-    val refresh: Boolean = false  // Does this payload represent a refresh token request
 )
 
