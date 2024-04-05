@@ -8,8 +8,8 @@ import jakarta.ws.rs.Produces
 import jakarta.ws.rs.core.MediaType
 import online.danielstefani.paddy.security.AbstractAuthorizationController
 import online.danielstefani.paddy.jwt.JwtService
-import online.danielstefani.paddy.security.dto.AuthorizationRequestDto
-import online.danielstefani.paddy.security.dto.AuthorizationResultDto
+import online.danielstefani.paddy.security.dto.AuthenticationRequestDto
+import online.danielstefani.paddy.security.dto.AuthenticationResultDto
 import org.jboss.resteasy.reactive.RestResponse
 
 @Path("/")
@@ -21,7 +21,7 @@ class MqttAuthorizationController(
 
     @POST
     @Path("/verify")
-    fun verifyIncomingMqttJwt(authDto: AuthorizationRequestDto): RestResponse<AuthorizationResultDto> {
+    fun verifyIncomingMqttJwt(authDto: AuthenticationRequestDto): RestResponse<AuthenticationResultDto> {
 
         // Parse JWT or immediately forbid
         val jwt = jwtService.parseJwt(authDto.jwt) ?:

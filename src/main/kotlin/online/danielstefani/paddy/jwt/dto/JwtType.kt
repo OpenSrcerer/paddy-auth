@@ -6,5 +6,6 @@ enum class JwtType(
 ) {
     ADMIN(31540000, "paddy~internal"),
     DAEMON(31540000, "paddy~daemon"),
-    USER(3600, "paddy~user")
+    USER(3600, "paddy~user"),
+    REFRESH(2592000, "paddy~refresh")
 }

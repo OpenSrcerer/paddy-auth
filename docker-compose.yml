@@ -5,14 +5,28 @@ networks:
     driver: bridge
 
 services:
+  paddy-backend:
+    container_name: paddy-backend
+    networks:
+      paddy-bridge:
+        aliases:
+          - paddy.backend.io
+    build: .
+    restart: on-failure
+    ports:
+      - "443:80" # Redirect https traffic to http because we are using a terminating LB
+      - "80:80"
+    env_file:
+      - ".env"
+
   paddy-auth:
     container_name: paddy-auth
     networks:
       paddy-bridge:
         aliases:
           - paddy.auth.io
-    build: .
-#    image: ghcr.io/opensrcerer/paddy-auth:master
+#    build: .
+    image: ghcr.io/opensrcerer/paddy-auth:master
     restart: on-failure
     ports:
       - "80:80"

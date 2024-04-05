@@ -7,8 +7,8 @@ import jakarta.ws.rs.Produces
 import jakarta.ws.rs.core.MediaType
 import online.danielstefani.paddy.security.AbstractAuthorizationController
 import online.danielstefani.paddy.jwt.JwtService
-import online.danielstefani.paddy.security.dto.AuthorizationRequestDto
-import online.danielstefani.paddy.security.dto.AuthorizationResultDto
+import online.danielstefani.paddy.security.dto.AuthenticationRequestDto
+import online.danielstefani.paddy.security.dto.AuthenticationResultDto
 import org.jboss.resteasy.reactive.RestResponse
 import java.time.Instant
 
@@ -21,7 +21,7 @@ class HttpAuthenticationController(
 
     @POST
     @Path("/validate")
-    fun checkJwtValidity(authDto: AuthorizationRequestDto): RestResponse<AuthorizationResultDto> {
+    fun checkJwtValidity(authDto: AuthenticationRequestDto): RestResponse<AuthenticationResultDto> {
         // Parse JWT or immediately forbid
         val jwt = jwtService.parseJwt(authDto.jwt) ?:
         return forbid("<invalid jwt>", "<invalid jwt>")
@@ -37,7 +37,10 @@ class HttpAuthenticationController(
             if (exp < Instant.now().epochSecond)
                 return forbid(authDto.jwt, sub)
 
-            return allow(authDto.jwt, sub)
+            return if (authDto.refresh)
+                    refresh(authDto.jwt, sub)
+                else
+                    allow(authDto.jwt, sub)
         }
     }
 }
