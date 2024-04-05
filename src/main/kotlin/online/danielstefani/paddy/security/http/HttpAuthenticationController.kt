@@ -31,13 +31,19 @@ class HttpAuthenticationController(
             val sub = this.getString("sub") ?: "<missing sub claim>"
             val exp = this.getLong("exp") ?: 0
             val aud = this.getString("aud") ?: ""
+            val rts = this.getString("rts") ?: ""
             val isRefresh = aud == JwtType.REFRESH.audience
 
             // Check signature
             if (!jwtService.isJwtValid(authDto.jwt))
                 return forbid(authDto.jwt, sub)
 
+            // Check expiration date
             if (exp < Instant.now().epochSecond)
+                return forbid(authDto.jwt, sub)
+
+            // Check serial (if refresh token)
+            if (isRefresh && authDto.refreshTokenSerial != null && rts != authDto.refreshTokenSerial)
                 return forbid(authDto.jwt, sub)
 
             return if (isRefresh) refresh(authDto.jwt, sub)

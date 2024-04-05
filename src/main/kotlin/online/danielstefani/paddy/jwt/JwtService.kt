@@ -18,7 +18,8 @@ class JwtService(
 ) {
     fun makeJwt(
         subject: String,
-        jwtType: JwtType
+        jwtType: JwtType,
+        rts: String?
     ): JwtResponseDto {
         val (privateKey, _) = keychainHolder.keypair()
 
@@ -36,7 +37,8 @@ class JwtService(
                 "iss": "https://danielstefani.online",
                 "iat": %s,
                 "exp": %s,
-                "aud": "${jwtType.audience}"
+                "aud": "${jwtType.audience}",
+                "rts": "${rts ?: "N/A"}"
             }
             
             """.trimIndent().replace(" ", "").replace("\n", "")

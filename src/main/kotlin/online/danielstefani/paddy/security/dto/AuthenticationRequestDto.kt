@@ -8,7 +8,7 @@ This step happens after the actor's authenticity has been verified.
 https://www.emqx.io/docs/en/latest/access-control/authz/http.html
 */
 data class AuthenticationRequestDto(
-    val jwt: String,              // Expected to be a JWT
-    val topic: String? = null,    // Topic that client wants to access
+    val jwt: String,                       // Expected to be a JWT
+    val topic: String? = null,             // Topic that client wants to access
+    val refreshTokenSerial: String? = null // Serial of the token (for refresh tokens only)
 )
-

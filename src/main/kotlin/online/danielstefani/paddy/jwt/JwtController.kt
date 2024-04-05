@@ -19,7 +19,7 @@ class JwtController(
     @POST
     @Path("/")
     fun getJwt(dto: JwtRequestDto): JwtResponseDto {
-        return jwtService.makeJwt(dto.subject, dto.jwtType)
+        return jwtService.makeJwt(dto.subject, dto.jwtType, dto.refreshTokenSerial)
     }
 
 }
