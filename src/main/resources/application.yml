@@ -1,6 +1,12 @@
 quarkus:
+  native:
+    additional-build-args:
+      - '--initialize-at-run-time=com.hivemq.client.internal.mqtt.codec.encoder.MqttPingReqEncoder'
+      - '--initialize-at-run-time=com.hivemq.client.internal.mqtt.codec.encoder.mqtt3.Mqtt3DisconnectEncoder'
+
   devservices:
     enabled: false
+
   http:
     port: 80
     root-path: /auth/v1

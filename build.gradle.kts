@@ -24,6 +24,9 @@ dependencies {
     implementation("io.quarkus:quarkus-resteasy-reactive")
     implementation("io.quarkus:quarkus-config-yaml")
 
+    // HiveMQ MQTT Client
+    implementation("com.hivemq:hivemq-mqtt-client-reactor:1.3.3")
+
     // Kotlin-Specific
     implementation("io.quarkus:quarkus-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")

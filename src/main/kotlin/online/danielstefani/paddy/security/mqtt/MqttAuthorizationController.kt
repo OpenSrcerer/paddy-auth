@@ -1,5 +1,6 @@
 package online.danielstefani.paddy.security.mqtt
 
+import com.hivemq.client.mqtt.datatypes.MqttQos
 import io.quarkus.logging.Log
 import jakarta.ws.rs.Consumes
 import jakarta.ws.rs.POST
@@ -8,16 +9,24 @@ import jakarta.ws.rs.Produces
 import jakarta.ws.rs.core.MediaType
 import online.danielstefani.paddy.security.AbstractAuthorizationController
 import online.danielstefani.paddy.jwt.JwtService
+import online.danielstefani.paddy.jwt.dto.JwtType
+import online.danielstefani.paddy.mqtt.RxMqttClient
 import online.danielstefani.paddy.security.dto.AuthenticationRequestDto
 import online.danielstefani.paddy.security.dto.AuthenticationResultDto
 import org.jboss.resteasy.reactive.RestResponse
+import java.time.Instant
 
 @Path("/")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 class MqttAuthorizationController(
-    private val jwtService: JwtService
+    private val jwtService: JwtService,
+    private val mqttClient: RxMqttClient
 ) : AbstractAuthorizationController() {
+
+    companion object {
+        const val SECONDS_WEEK = 604800
+    }
 
     @POST
     @Path("/verify")
@@ -28,6 +37,14 @@ class MqttAuthorizationController(
             return forbid("<missing/invalid jwt>", authDto.topic!!)
 
         val sub = jwt.getJsonObject("payload").getString("sub")
+        val exp = jwt.getJsonObject("payload").getString("exp")
+
+        // If JWT on the device is expiring in one week, rotate it
+        if (exp.toLong() <= Instant.now().epochSecond + SECONDS_WEEK) {
+            val newJwt = jwtService.makeJwt(sub, JwtType.DAEMON, null).jwt
+            mqttClient.publish(sub, "rotate", newJwt, qos = MqttQos.EXACTLY_ONCE)
+                ?.subscribe()
+        }
 
         // Special case: Check if the token is for the backend
         if (sub.equals("paddy-backend")) {
