@@ -55,9 +55,11 @@ class MqttAuthorizationController(
 
             // Remove element from deduplication set after 60s
             Mono.just(true)
-                .doOnSubscribe { Log.info("[JWT-ROTATOR] Removing <$sub> from deduplication set.") }
                 .delayElement(Duration.ofSeconds(60))
-                .doOnSuccess { rotationDeduplicationSet.remove(sub) }
+                .doOnSuccess {
+                    Log.info("[JWT-ROTATOR] Removing <$sub> from deduplication set.")
+                    rotationDeduplicationSet.remove(sub)
+                }
                 .subscribe()
         }
 
