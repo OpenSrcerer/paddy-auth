@@ -14,6 +14,8 @@ import online.danielstefani.paddy.mqtt.RxMqttClient
 import online.danielstefani.paddy.security.dto.AuthenticationRequestDto
 import online.danielstefani.paddy.security.dto.AuthenticationResultDto
 import org.jboss.resteasy.reactive.RestResponse
+import reactor.core.publisher.Mono
+import java.time.Duration
 import java.time.Instant
 
 @Path("/")
@@ -26,6 +28,8 @@ class MqttAuthorizationController(
 
     companion object {
         const val SECONDS_WEEK = 604800
+
+        val rotationDeduplicationSet = mutableSetOf<String>()
     }
 
     @POST
@@ -40,10 +44,21 @@ class MqttAuthorizationController(
         val exp = jwt.getJsonObject("payload").getString("exp")
 
         // If JWT on the device is expiring in one week, rotate it
-        if (exp.toLong() <= Instant.now().epochSecond + SECONDS_WEEK) {
+        if (shouldRotateKey(sub, exp)) {
+            rotationDeduplicationSet.add(sub) // Prevent duplicates
+
             val newJwt = jwtService.makeJwt(sub, JwtType.DAEMON, null).jwt
+
             mqttClient.publish(sub, "rotate", newJwt, qos = MqttQos.EXACTLY_ONCE)
+                ?.doOnSubscribe { Log.info("[JWT-ROTATOR] Rotating JWT for <$sub>...") }
                 ?.subscribe()
+
+            // Remove element from deduplication set after 60s
+            Mono.just(true)
+                .doOnSubscribe { Log.info("[JWT-ROTATOR] Removing <$sub> from deduplication set.") }
+                .delayElement(Duration.ofSeconds(60))
+                .doOnSuccess { rotationDeduplicationSet.remove(sub) }
+                .subscribe()
         }
 
         // Special case: Check if the token is for the backend
@@ -55,6 +70,11 @@ class MqttAuthorizationController(
         // Check if the topic matches the sub -> if no match 403
         return if (subMatchTopic(sub, authDto.topic!!))
             allow(sub, authDto.topic) else forbid(sub, authDto.topic)
+    }
+
+    private fun shouldRotateKey(sub: String, exp: String): Boolean {
+        return !rotationDeduplicationSet.contains(sub)
+                && exp.toLong() <= Instant.now().epochSecond + SECONDS_WEEK
     }
 
     /*
