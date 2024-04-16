@@ -65,7 +65,7 @@ class RxMqttClient(
         // ---- Build Client ----
         val client = Mqtt5Client.builder()
             .identifier(
-                "${mqttConfig.clientId()}-scheduler-$mqttClientId".apply {
+                "${mqttConfig.clientId()}-$mqttClientId".apply {
                     Log.info("[client->mqtt->reaper] // Building new MQTT client: $this")
                 }
             )
