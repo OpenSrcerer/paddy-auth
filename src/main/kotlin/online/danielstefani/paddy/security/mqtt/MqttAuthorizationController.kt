@@ -41,7 +41,11 @@ class MqttAuthorizationController(
             return forbid("<missing/invalid jwt>", authDto.topic!!)
 
         val sub = jwt.getJsonObject("payload").getString("sub")
-        val exp = jwt.getJsonObject("payload").getString("exp")
+        val exp = jwt.getJsonObject("payload").getLong("exp")
+
+        // Check expiration date
+        if (exp < Instant.now().epochSecond)
+            return forbid(authDto.jwt, sub)
 
         // If JWT on the device is expiring in one week, rotate it
         if (shouldRotateKey(sub, exp)) {
@@ -74,9 +78,9 @@ class MqttAuthorizationController(
             allow(sub, authDto.topic) else forbid(sub, authDto.topic)
     }
 
-    private fun shouldRotateKey(sub: String, exp: String): Boolean {
+    private fun shouldRotateKey(sub: String, exp: Long): Boolean {
         return !rotationDeduplicationSet.contains(sub)
-                && exp.toLong() <= Instant.now().epochSecond + SECONDS_WEEK
+                && exp <= Instant.now().epochSecond + SECONDS_WEEK
     }
 
     /*
